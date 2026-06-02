@@ -704,54 +704,52 @@ with tab5:
             
             st.markdown("##### 📊 납부 세금 요약 명세서")
             st.markdown(
-                f"""
-                <div style="background-color:#1e1814; padding:20px; border-radius:10px; border:1px solid #4a382c;">
-                    <div style="margin-bottom: 15px; text-align: left;">
-                        {badge_html}
-                    </div>
-                    <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:1.15rem; font-weight:bold; border-bottom:1px solid #3d2f25; padding-bottom:8px;">
-                        <span style="color:#dfba6b;">최종 예상 총 비용 (실구매가)</span>
-                        <span style="color:#dfba6b;">{int(final_price):,}원</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.88rem;">
-                        <span style="color:#a89984;">순수 물품대금 ({product_price_usd:.1f}$)</span>
-                        <span>{int(pure_goods_krw):,}원</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.88rem;">
-                        <span style="color:#a89984;">해외 배송비 ({shipping_usd:.1f}$)</span>
-                        <span>{int(shipping_usd * exchange_rate):,}원</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:0.88rem; border-bottom:1px solid #3d2f25; padding-bottom:8px;">
-                        <span style="color:#a89984;">과세 기준가격 (CIF 원화환산)</span>
-                        <span>{int(cif_krw):,}원</span>
-                    </div>
-                    
-                    <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.88rem; color:#ebd9c2;">
-                        <span>1. 관세 ({'0%' if is_duty_free or fta_applied else '20%'})</span>
-                        <span>{int(customs_tax):,}원</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.88rem; color:#ebd9c2;">
-                        <span>2. 주세 (72%)</span>
-                        <span>{int(liquor_tax):,}원</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.88rem; color:#ebd9c2;">
-                        <span>3. 교육세 (30%)</span>
-                        <span>{int(education_tax):,}원</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:0.88rem; color:#ebd9c2; border-bottom:1px solid #3d2f25; padding-bottom:8px;">
-                        <span>4. 부가가치세 ({'0%' if is_duty_free else '10%'})</span>
-                        <span>{int(vat):,}원</span>
-                    </div>
-                    
-                    <div style="display:flex; justify-content:space-between; margin-top:10px; font-weight:bold; font-size:1.05rem; color:#e57373;">
-                        <span>총 예상 세금 합계</span>
-                        <span>{int(total_tax):,}원</span>
-                    </div>
-                    <p style="font-size:0.75rem; color:#a0907a; margin-top:15px; margin-bottom:0; text-align:center; font-style:italic;">
-                        * 과세 비율: 과세가격 대비 세금 비중은 약 <b>{tax_ratio}%</b>입니다. 
-                    </p>
-                </div>
-                """,
+                f"""<div style="background-color:#1e1814; padding:20px; border-radius:10px; border:1px solid #4a382c;">
+<div style="margin-bottom: 15px; text-align: left;">
+{badge_html}
+</div>
+<div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:1.15rem; font-weight:bold; border-bottom:1px solid #3d2f25; padding-bottom:8px;">
+<span style="color:#dfba6b;">최종 예상 총 비용 (실구매가)</span>
+<span style="color:#dfba6b;">{int(final_price):,}원</span>
+</div>
+<div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.88rem;">
+<span style="color:#a89984;">순수 물품대금 ({product_price_usd:.1f}$)</span>
+<span>{int(pure_goods_krw):,}원</span>
+</div>
+<div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.88rem;">
+<span style="color:#a89984;">해외 배송비 ({shipping_usd:.1f}$)</span>
+<span>{int(shipping_usd * exchange_rate):,}원</span>
+</div>
+<div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:0.88rem; border-bottom:1px solid #3d2f25; padding-bottom:8px;">
+<span style="color:#a89984;">과세 기준가격 (CIF 원화환산)</span>
+<span>{int(cif_krw):,}원</span>
+</div>
+
+<div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.88rem; color:#ebd9c2;">
+<span>1. 관세 ({'0%' if is_duty_free or fta_applied else '20%'})</span>
+<span>{int(customs_tax):,}원</span>
+</div>
+<div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.88rem; color:#ebd9c2;">
+<span>2. 주세 (72%)</span>
+<span>{int(liquor_tax):,}원</span>
+</div>
+<div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.88rem; color:#ebd9c2;">
+<span>3. 교육세 (30%)</span>
+<span>{int(education_tax):,}원</span>
+</div>
+<div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:0.88rem; color:#ebd9c2; border-bottom:1px solid #3d2f25; padding-bottom:8px;">
+<span>4. 부가가치세 ({'0%' if is_duty_free else '10%'})</span>
+<span>{int(vat):,}원</span>
+</div>
+
+<div style="display:flex; justify-content:space-between; margin-top:10px; font-weight:bold; font-size:1.05rem; color:#e57373;">
+<span>총 예상 세금 합계</span>
+<span>{int(total_tax):,}원</span>
+</div>
+<p style="font-size:0.75rem; color:#a0907a; margin-top:15px; margin-bottom:0; text-align:center; font-style:italic;">
+* 과세 비율: 과세가격 대비 세금 비중은 약 <b>{tax_ratio}%</b>입니다. 
+</p>
+</div>""",
                 unsafe_allow_html=True
             )
             
