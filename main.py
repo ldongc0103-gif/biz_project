@@ -637,7 +637,7 @@ with tab5:
     # ✈️ 해외 직구 관부가세 계산기
     with calc_tab1:
         st.markdown("##### ✈️ 해외 직구 세금 시뮬레이션")
-        st.markdown("<p style='font-size:0.8rem; color:#a0907a;'>현행 대한민국 세법에 근거한 주류 관세, 주세, 교육세, 부가세를 산정합니다. (1병 1.0L 이하 면세 규정 제외 기준)</p>", unsafe_allow_html=True)
+        st.markdown("<p style='font-size:0.8rem; color:#a0907a;'>현행 대한민국 세법에 근거하여 주류 관세, 주세, 교육세, 부가세를 산정합니다. 소액 면세 한도와 FTA 협정세율 감면 혜택까지 완벽히 대응합니다.</p>", unsafe_allow_html=True)
         
         tax_col1, tax_col2 = st.columns([1, 1.2])
         
@@ -646,16 +646,19 @@ with tab5:
             shipping_usd = st.number_input("해외 배송비 ($ USD)", min_value=0.0, value=35.0, step=5.0)
             exchange_rate = st.number_input("기준 환율 (원/$)", min_value=500.0, max_value=2500.0, value=1380.0, step=10.0)
             bottle_volume = st.number_input("주류 용량 (L리터, 예: 700ml = 0.7)", min_value=0.1, max_value=5.0, value=0.7, step=0.05)
-            abv_input = st.number_input("알코올 도수 (%)", min_value=1.0, max_value=99.0, value=40.0, step=0.5)
+            bottle_count = st.number_input("주류 수량 (병)", min_value=1, max_value=20, value=1, step=1)
+            
+            # 고급 옵션 체크박스
+            st.markdown("<div style='margin-top:10px;'></div>", unsafe_allow_html=True)
+            fta_applied = st.checkbox("🇪🇺🇺🇸🇬🇧 FTA 협정세율 적용 (유럽/미국/영국산 원산지 증명 시 관세 20% 면제)", value=False)
             
             st.markdown(
                 """
                 <div style="background-color:#1a1410; padding:12px; border-radius:6px; border:1px solid #3d2f25; font-size:0.78rem; color:#a0907a; margin-top:15px;">
-                    📝 <b>직구 세금 산정 기준:</b><br>
-                    - 관세: 과세가격(CIF) × 20% (주류 관세율)<br>
-                    - 주세: (과세가격 + 관세) × 72%<br>
-                    - 교육세: 주세 × 30%<br>
-                    - 부가가세: (과세가격 + 관세 + 주세 + 교육세) × 10%
+                    📝 <b>직구 세금 산정 핵심 요약:</b><br>
+                    • <b>소액 주류 면세 조건:</b> 총 구매 금액 <b>$150 이하</b> & <b>1병</b> & <b>용량 1L 이하</b> 시 관세와 부가세가 100% 면제됩니다. (주세 72% + 교육세 21.6%만 부과)<br>
+                    • <b>FTA 협정세율:</b> FTA 체결국(미국, EU, 영국 등) 생산지 증명 시 기본 관세(20%)가 면제됩니다.<br>
+                    • <b>주세율:</b> 위스키(증류주) 기준 72%가 적용됩니다.
                 </div>
                 """,
                 unsafe_allow_html=True
@@ -666,11 +669,29 @@ with tab5:
             cif_usd = product_price_usd + shipping_usd
             cif_krw = cif_usd * exchange_rate
             
-            # 주류 세금 계산
-            customs_tax = cif_krw * 0.20  # 관세 20%
-            liquor_tax = (cif_krw + customs_tax) * 0.72  # 주세 72%
-            education_tax = liquor_tax * 0.30  # 교육세 30%
-            vat = (cif_krw + customs_tax + liquor_tax + education_tax) * 0.10  # 부가세 10%
+            # 소액 주류 면세 판정 (상품가 150달러 이하, 1병 이하, 용량 1L 이하)
+            is_duty_free = (product_price_usd <= 150.0) and (bottle_count == 1) and (bottle_volume <= 1.0)
+            
+            # 주류 세금 계산 분기
+            if is_duty_free:
+                customs_tax = 0.0  # 관세 면제
+                liquor_tax = cif_krw * 0.72  # 주세 72%
+                education_tax = liquor_tax * 0.30  # 교육세 30%
+                vat = 0.0  # 부가세 면제
+                badge_html = "<span style='background-color:#1b5e20; color:#81c784; border-radius:4px; padding: 3px 8px; font-size:0.8rem; font-weight:bold;'>🥇 소액 주류 면세 혜택 적용됨 (관세, 부가세 면제)</span>"
+            else:
+                # 관세율 적용 (FTA 미적용 시 20%, 적용 시 0%)
+                customs_rate = 0.0 if fta_applied else 0.20
+                
+                customs_tax = cif_krw * customs_rate
+                liquor_tax = (cif_krw + customs_tax) * 0.72
+                education_tax = liquor_tax * 0.30
+                vat = (cif_krw + customs_tax + liquor_tax + education_tax) * 0.10
+                
+                if fta_applied:
+                    badge_html = "<span style='background-color:#0d47a1; color:#90caf9; border-radius:4px; padding: 3px 8px; font-size:0.8rem; font-weight:bold;'>🇪🇺🇺🇸 FTA 협정세율 적용됨 (관세 면제)</span>"
+                else:
+                    badge_html = "<span style='background-color:#b71c1c; color:#ef9a9a; border-radius:4px; padding: 3px 8px; font-size:0.8rem; font-weight:bold;'>⚠️ 일반 관부가세 과세 대상</span>"
             
             total_tax = customs_tax + liquor_tax + education_tax + vat
             final_price = cif_krw + total_tax
@@ -678,12 +699,18 @@ with tab5:
             # 주세 부과 전 실구매 상품가
             pure_goods_krw = product_price_usd * exchange_rate
             
+            # ZeroDivision 방지
+            tax_ratio = round((total_tax / cif_krw) * 100, 1) if cif_krw > 0 else 0.0
+            
             st.markdown("##### 📊 납부 세금 요약 명세서")
             st.markdown(
                 f"""
                 <div style="background-color:#1e1814; padding:20px; border-radius:10px; border:1px solid #4a382c;">
+                    <div style="margin-bottom: 15px; text-align: left;">
+                        {badge_html}
+                    </div>
                     <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:1.15rem; font-weight:bold; border-bottom:1px solid #3d2f25; padding-bottom:8px;">
-                        <span style="color:#dfba6b;">최종 예상 총 비용</span>
+                        <span style="color:#dfba6b;">최종 예상 총 비용 (실구매가)</span>
                         <span style="color:#dfba6b;">{int(final_price):,}원</span>
                     </div>
                     <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.88rem;">
@@ -691,16 +718,16 @@ with tab5:
                         <span>{int(pure_goods_krw):,}원</span>
                     </div>
                     <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.88rem;">
-                        <span style="color:#a89984;">배송 비용 ({shipping_usd:.1f}$)</span>
+                        <span style="color:#a89984;">해외 배송비 ({shipping_usd:.1f}$)</span>
                         <span>{int(shipping_usd * exchange_rate):,}원</span>
                     </div>
                     <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:0.88rem; border-bottom:1px solid #3d2f25; padding-bottom:8px;">
-                        <span style="color:#a89984;">과세 기준액 (CIF)</span>
+                        <span style="color:#a89984;">과세 기준가격 (CIF 원화환산)</span>
                         <span>{int(cif_krw):,}원</span>
                     </div>
                     
                     <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.88rem; color:#ebd9c2;">
-                        <span>1. 관세 (20%)</span>
+                        <span>1. 관세 ({'0%' if is_duty_free or fta_applied else '20%'})</span>
                         <span>{int(customs_tax):,}원</span>
                     </div>
                     <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.88rem; color:#ebd9c2;">
@@ -712,7 +739,7 @@ with tab5:
                         <span>{int(education_tax):,}원</span>
                     </div>
                     <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:0.88rem; color:#ebd9c2; border-bottom:1px solid #3d2f25; padding-bottom:8px;">
-                        <span>4. 부가세 (10%)</span>
+                        <span>4. 부가가치세 ({'0%' if is_duty_free else '10%'})</span>
                         <span>{int(vat):,}원</span>
                     </div>
                     
@@ -721,7 +748,7 @@ with tab5:
                         <span>{int(total_tax):,}원</span>
                     </div>
                     <p style="font-size:0.75rem; color:#a0907a; margin-top:15px; margin-bottom:0; text-align:center; font-style:italic;">
-                        * 세율 과세 비율: 과세가격 대비 세금 비중은 약 <b>{round((total_tax / cif_krw) * 100, 1)}%</b>입니다 (주류 직구 시 관세폭탄의 주 요인).
+                        * 과세 비율: 과세가격 대비 세금 비중은 약 <b>{tax_ratio}%</b>입니다. 
                     </p>
                 </div>
                 """,
