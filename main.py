@@ -292,18 +292,14 @@ with tab2:
                 st.markdown("##### 👅 오감 테이스팅 노트")
                 notes = selected_w['tasting_notes']
                 st.markdown(
-                    f"""
-                    <div class="tasting-note-box">
-                        <div class="note-title">👃 Nose (향)</div>
-                        <div style="color:#f5f2eb; margin-bottom:10px;">{notes['Nose']}</div>
-                        
-                        <div class="note-title">👅 Palate (맛)</div>
-                        <div style="color:#f5f2eb; margin-bottom:10px;">{notes['Palate']}</div>
-                        
-                        <div class="note-title">🏁 Finish (여운)</div>
-                        <div style="color:#f5f2eb;">{notes['Finish']}</div>
-                    </div>
-                    """,
+                    f"""<div class="tasting-note-box">
+<div class="note-title">👃 Nose (향)</div>
+<div style="color:#f5f2eb; margin-bottom:10px;">{notes['Nose']}</div>
+<div class="note-title">👅 Palate (맛)</div>
+<div style="color:#f5f2eb; margin-bottom:10px;">{notes['Palate']}</div>
+<div class="note-title">🏁 Finish (여운)</div>
+<div style="color:#f5f2eb;">{notes['Finish']}</div>
+</div>""",
                     unsafe_allow_html=True
                 )
                 
