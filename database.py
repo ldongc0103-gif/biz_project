@@ -779,8 +779,16 @@ def recommend_whiskies(user_preferences, limit=3):
 
 def get_whisky_image_url(whisky):
     """
-    위스키의 고해상도 고정 백업 이미지를 100% 안전하게 반환합니다.
-    외부 포털의 크롤링 차단 보안 이슈를 원천 차단하기 위해 실시간 이미지 검색을 비활성화하고,
-    미리 큐레이션된 Unsplash의 고화질 위스키 대표 이미지를 지연 없이 즉시 반환하도록 튜닝하였습니다.
+    로컬 이미지 폴더(whisky_images)에서 
+    위스키 ID에 부합하는 이미지 파일(PNG/JPG)이 존재하는지 확인 후, 있으면 로컬 경로를 반환합니다.
+    존재하지 않을 경우 기존 Unsplash 고화질 이미지를 반환합니다.
     """
+    import os
+    local_dir = "whisky_images"
+    whisky_id = whisky.get("id")
+    if whisky_id and os.path.exists(local_dir):
+        for ext in [".png", ".jpg", ".jpeg", ".PNG", ".JPG", ".JPEG"]:
+            local_path = os.path.join(local_dir, f"{whisky_id}{ext}")
+            if os.path.exists(local_path):
+                return local_path
     return whisky['image_url']
