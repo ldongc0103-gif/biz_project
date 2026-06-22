@@ -270,125 +270,106 @@ with tab2:
                         
                         # 상세 분석을 열 수 있는 버튼
                         if st.button(f"📊 {w['name_ko']} 심층 분석", key=f"btn_detail_{w['id']}", use_container_width=True):
-                            st.session_state['selected_whisky_id'] = w['id']
-                            st.success(f"아래 [🔬 {w['name_ko']} 심층 분석 센터]로 데이터가 로드되었습니다!")
+                            if st.session_state.get('selected_whisky_id') == w['id']:
+                                st.session_state['selected_whisky_id'] = None
+                            else:
+                                st.session_state['selected_whisky_id'] = w['id']
+                            st.rerun()
                         
-        # 심층 분석 센터 (사용자가 버튼을 클릭한 경우 활성화)
-        st.markdown("<hr>", unsafe_allow_html=True)
-        st.markdown("### 🔬 위스키 심층 분석 센터")
-        
-        # 선택된 위스키 세션 상태 유지
-        if 'selected_whisky_id' not in st.session_state:
-            st.session_state['selected_whisky_id'] = WHISKY_DATA[0]['id']
-            
-        selected_w = get_whisky_by_id(st.session_state['selected_whisky_id'])
-        
-        if selected_w:
-            st.markdown(f"#### 🥃 [{selected_w['category']}] {selected_w['name_ko']} 상세 프로필 리포트")
-            
-            d_col1, d_col2 = st.columns([1, 1])
-            
-            with d_col1:
-                st.markdown("##### 👅 오감 테이스팅 노트")
-                notes = selected_w['tasting_notes']
-                st.markdown(
-                    f"""<div class="tasting-note-box">
+                        if st.session_state.get('selected_whisky_id') == w['id']:
+                            st.markdown("<hr style='margin: 15px 0 !important;'>", unsafe_allow_html=True)
+                            st.markdown("##### 🔬 심층 분석 리포트")
+                            
+                            # 1. Tasting Notes
+                            notes = w['tasting_notes']
+                            st.markdown(
+                                f"""<div class="tasting-note-box">
 <div class="note-title">👃 Nose (향)</div>
-<div style="color:#f5f2eb; margin-bottom:10px;">{notes['Nose']}</div>
+<div style="color:#f5f2eb; margin-bottom:10px; font-size:0.85rem;">{notes['Nose']}</div>
 <div class="note-title">👅 Palate (맛)</div>
-<div style="color:#f5f2eb; margin-bottom:10px;">{notes['Palate']}</div>
+<div style="color:#f5f2eb; margin-bottom:10px; font-size:0.85rem;">{notes['Palate']}</div>
 <div class="note-title">🏁 Finish (여운)</div>
-<div style="color:#f5f2eb;">{notes['Finish']}</div>
+<div style="color:#f5f2eb; font-size:0.85rem;">{notes['Finish']}</div>
 </div>""",
-                    unsafe_allow_html=True
-                )
-                
-                # 채널별 가격 비교 차트 (Plotly Bar Chart)
-                st.markdown("##### 💵 유통 채널별 가격 현황")
-                price_dict = selected_w['current_prices']
-                price_df = pd.DataFrame({
-                    "채널": list(price_dict.keys()),
-                    "가격 (원)": list(price_dict.values())
-                })
-                
-                fig_price = px.bar(
-                    price_df,
-                    x="채널",
-                    y="가격 (원)",
-                    text="가격 (원)",
-                    color="가격 (원)",
-                    color_continuous_scale=[[0, '#3d2f25'], [1, '#dfba6b']]
-                )
-                fig_price.update_traces(texttemplate='%{text:,}원', textposition='outside')
-                fig_price.update_layout(
-                    plot_bgcolor='rgba(0,0,0,0)',
-                    paper_bgcolor='rgba(0,0,0,0)',
-                    font_color='#ebd9c2',
-                    xaxis_title=None,
-                    yaxis_title=None,
-                    height=280,
-                    margin=dict(l=10, r=10, t=10, b=10)
-                )
-                fig_price.update_yaxes(showgrid=True, gridcolor='#221a14')
-                st.plotly_chart(fig_price, use_container_width=True, config={'displayModeBar': False})
-                
-            with d_col2:
-                st.markdown("##### 📊 맛 프로필 오각형 분석")
-                
-                profile_dict = selected_w['taste_profile']
-                # 레이더 차트 데이터프레임 구성
-                radar_df = pd.DataFrame({
-                    "맛 특성": list(profile_dict.keys()),
-                    "점수 (10점 만점)": list(profile_dict.values())
-                })
-                
-                # Radar Chart 생성
-                fig_radar = go.Figure()
-                fig_radar.add_trace(go.Scatterpolar(
-                    r=list(profile_dict.values()) + [list(profile_dict.values())[0]],
-                    theta=list(profile_dict.keys()) + [list(profile_dict.keys())[0]],
-                    fill='toself',
-                    fillcolor='rgba(223, 186, 107, 0.25)',
-                    line=dict(color='#dfba6b', width=2),
-                    name=selected_w['name_ko']
-                ))
-                
-                fig_radar.update_layout(
-                    polar=dict(
-                        radialaxis=dict(
-                            visible=True,
-                            range=[0, 10],
-                            gridcolor='#3d2f25',
-                            linecolor='#3d2f25',
-                            tickfont=dict(color='#a0907a')
-                        ),
-                        angularaxis=dict(
-                            gridcolor='#3d2f25',
-                            linecolor='#3d2f25',
-                            tickfont=dict(color='#ebd9c2', size=11)
-                        ),
-                        bgcolor='rgba(0,0,0,0)'
-                    ),
-                    paper_bgcolor='rgba(0,0,0,0)',
-                    showlegend=False,
-                    height=350,
-                    margin=dict(l=50, r=50, t=30, b=30)
-                )
-                st.plotly_chart(fig_radar, use_container_width=True, config={'displayModeBar': False})
-                
-                # 설명 코멘트 박스
-                st.markdown(
-                    f"""
-                    <div style="background-color: #16120e; padding: 15px; border-radius: 8px; border: 1px solid #32251a; font-size:0.85rem; color:#c7b9a5; line-height: 1.6;">
-                        🎯 <b>테이스팅 어드바이스:</b><br>
-                        이 위스키는 <b>{max(profile_dict, key=profile_dict.get)}</b> 속성이 가장 도드라집니다. 
-                        원산지는 <b>{selected_w['origin']}</b>이며, 스펙상 알코올 도수는 <b>{selected_w['abv']}%</b>입니다. 
-                        가장 합리적으로 구매할 수 있는 채널은 <b>{min(price_dict, key=price_dict.get)}</b> 채널이며, 
-                        현재 최저 판매가는 약 <b>{min(price_dict.values()):,}원</b>선입니다.
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
+                                unsafe_allow_html=True
+                            )
+                            
+                            # 2. Radar Chart
+                            profile_dict = w['taste_profile']
+                            fig_radar = go.Figure()
+                            fig_radar.add_trace(go.Scatterpolar(
+                                r=list(profile_dict.values()) + [list(profile_dict.values())[0]],
+                                theta=list(profile_dict.keys()) + [list(profile_dict.keys())[0]],
+                                fill='toself',
+                                fillcolor='rgba(223, 186, 107, 0.25)',
+                                line=dict(color='#dfba6b', width=2),
+                                name=w['name_ko']
+                            ))
+                            fig_radar.update_layout(
+                                polar=dict(
+                                    radialaxis=dict(
+                                        visible=True,
+                                        range=[0, 10],
+                                        gridcolor='#3d2f25',
+                                        linecolor='#3d2f25',
+                                        tickfont=dict(color='#a0907a', size=8)
+                                    ),
+                                    angularaxis=dict(
+                                        gridcolor='#3d2f25',
+                                        linecolor='#3d2f25',
+                                        tickfont=dict(color='#ebd9c2', size=9)
+                                    ),
+                                    bgcolor='rgba(0,0,0,0)'
+                                ),
+                                paper_bgcolor='rgba(0,0,0,0)',
+                                showlegend=False,
+                                height=260,
+                                margin=dict(l=30, r=30, t=20, b=20)
+                            )
+                            st.plotly_chart(fig_radar, use_container_width=True, config={'displayModeBar': False})
+                            
+                            # 3. Price Bar Chart
+                            price_dict = w['current_prices']
+                            price_df = pd.DataFrame({
+                                "채널": list(price_dict.keys()),
+                                "가격 (원)": list(price_dict.values())
+                            })
+                            fig_price = px.bar(
+                                price_df,
+                                x="채널",
+                                y="가격 (원)",
+                                text="가격 (원)",
+                                color="가격 (원)",
+                                color_continuous_scale=[[0, '#3d2f25'], [1, '#dfba6b']]
+                            )
+                            fig_price.update_traces(texttemplate='%{text:,}원', textposition='outside', textfont=dict(size=8))
+                            fig_price.update_layout(
+                                plot_bgcolor='rgba(0,0,0,0)',
+                                paper_bgcolor='rgba(0,0,0,0)',
+                                font_color='#ebd9c2',
+                                xaxis_title=None,
+                                yaxis_title=None,
+                                height=220,
+                                margin=dict(l=5, r=5, t=20, b=5),
+                                showlegend=False
+                            )
+                            fig_price.update_coloraxes(showscale=False)
+                            fig_price.update_yaxes(showgrid=True, gridcolor='#221a14', tickfont=dict(size=8))
+                            fig_price.update_xaxes(tickfont=dict(size=8))
+                            st.plotly_chart(fig_price, use_container_width=True, config={'displayModeBar': False})
+                            
+                            # 4. Commentary
+                            st.markdown(
+                                f"""
+                                <div style="background-color: #16120e; padding: 10px; border-radius: 6px; border: 1px solid #32251a; font-size:0.78rem; color:#c7b9a5; line-height: 1.5;">
+                                    🎯 <b>어드바이스:</b> <b>{max(profile_dict, key=profile_dict.get)}</b> 속성이 가장 도드라집니다. 
+                                    가장 저렴한 곳은 <b>{min(price_dict, key=price_dict.get)}</b> (<b>{min(price_dict.values()):,}원</b>) 채널입니다.
+                                </div>
+                                """,
+                                unsafe_allow_html=True
+                            )
+                        
+
 
 
 # ================= TAB 3: 가격 트렌드 분석 =================
